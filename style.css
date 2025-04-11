@@ -260,4 +260,109 @@ footer a:hover {
 /* Container for buttons if needed */
 .mood-buttons-container {
     /* No specific styles needed now, but good for structure */
+}
+
+/* --- Filters --- */
+.filters-container {
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 20px; /* Spacing between filter items */
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-item label {
+    cursor: pointer;
+    color: var(--secondary-color);
+    font-weight: 400;
+    white-space: nowrap; /* Prevent label wrapping */
+}
+
+.filter-item input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
+}
+
+.filter-item input[type="number"] {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 80px; /* Adjust width as needed */
+    font-family: inherit;
+    accent-color: var(--primary-color);
+}
+
+.mood-buttons-container {
+    /* Styles for button container */
+}
+
+/* --- Recipe Display --- */
+#recipe-display {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, border-color 0.4s ease;
+}
+
+#dish-image {
+    display: block;
+    margin: 25px auto;
+    border-radius: 10px;
+    max-width: 90%;
+    height: auto;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transition: box-shadow 0.4s ease;
+}
+
+.nutrition-info {
+    margin: 20px 0;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Space between calorie and fat */
+    flex-wrap: wrap;
+}
+
+.nutrition-info span {
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.nutrition-info span strong {
+    color: var(--secondary-color);
+}
+
+#dish-instructions { /* Now used for summary */
+    line-height: 1.7;
+    text-align: justify;
+    margin-bottom: 20px; /* Add margin before link */
+    /* white-space: pre-wrap; -- May not be needed for summary */
+}
+
+#dish-source-link {
+    display: inline-block; /* Control display via JS */
+    margin-top: 15px;
+    padding: 8px 15px;
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 400;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#dish-source-link:hover {
+    filter: brightness(90%);
+    transform: translateY(-1px);
 } 

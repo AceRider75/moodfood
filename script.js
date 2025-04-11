@@ -3,201 +3,193 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeDisplay = document.getElementById('recipe-display');
     const dishName = document.getElementById('dish-name');
     const dishImage = document.getElementById('dish-image');
-    const dishIngredients = document.getElementById('dish-ingredients');
     const dishInstructions = document.getElementById('dish-instructions');
+    const dishCalories = document.getElementById('dish-calories');
+    const dishFat = document.getElementById('dish-fat');
+    const dishSourceLink = document.getElementById('dish-source-link');
     const loadingDiv = document.getElementById('loading');
-    const vegFilterCheckbox = document.getElementById('veg-filter'); // Get the checkbox
+    const vegFilterCheckbox = document.getElementById('veg-filter');
+    const maxFatInput = document.getElementById('max-fat-filter');
 
-    // API Endpoints
-    const API_BASE_URL = 'https://www.themealdb.com/api/json/v1/1/';
-    const API_RANDOM = `${API_BASE_URL}random.php`;
-    const API_FILTER_CATEGORY = `${API_BASE_URL}filter.php?c=`;
-    const API_LOOKUP_ID = `${API_BASE_URL}lookup.php?i=`;
-    const VEG_CATEGORY = 'Vegetarian'; // Constant for veg category
+    // --- Spoonacular API Config ---
+    const SPOONACULAR_API_KEY = '2fb0a2ef5c0b4dec884098b6b0019000'; 
+    const API_SEARCH_RECIPES = 'https://api.spoonacular.com/recipes/complexSearch';
 
-    const moodToCategoryMap = {
-        happy: ['Dessert', 'Seafood', 'Pasta'], // Bright, celebratory foods
-        sad: ['Chicken', 'Pasta', 'Vegetarian', 'Dessert'], // Comforting, warm, sweet
-        angry: ['Side', 'Chicken', 'Miscellaneous'], // Spicy, hearty, maybe something to crunch?
-        adventurous: ['Side', 'Miscellaneous', 'Lamb', 'Goat', 'Seafood'], // Unique or less common dishes
-        stressed: ['Starter', 'Vegan', 'Breakfast', 'Vegetarian'], // Simple, quick, or healthy options
-        chill: ['Pasta', 'Chicken', 'Vegetarian', 'Breakfast'], // Easy-going, satisfying meals
-        random: null // For completely random selection
+    // --- Mood Mapping for Spoonacular ---
+    // EXTREMELY SIMPLE: One keyword, no calorie limits for failing moods.
+    const moodToSearchParams = {
+        happy:       { query: 'dessert' },        // Single keyword
+        sad:         { query: 'comfort' },        // Single keyword
+        angry:       { query: 'spicy' },          // Single keyword
+        adventurous: { query: 'exotic' },         // Single keyword
+        stressed:    { query: 'quick easy healthy', maxCalories: 800, maxReadyTime: 45 }, // Keep this one as it worked
+        chill:       { query: 'pizza' },          // Single keyword
+        random:      { query: '' } 
     };
 
-    // List of all theme classes to easily remove them
     const themeClasses = ['theme-default', 'theme-happy', 'theme-sad', 'theme-angry', 'theme-adventurous', 'theme-stressed', 'theme-chill'];
 
     moodButtons.forEach(button => {
         button.addEventListener('click', () => {
             const mood = button.getAttribute('data-mood');
-            
-            // Update theme
-            const themeClass = `theme-${mood}`; // e.g., theme-happy
-            document.body.classList.remove(...themeClasses); // Remove all possible theme classes
-            if (themeClass !== 'theme-random') { // Don't apply a theme for random
-                document.body.classList.add(themeClass);
-            } else {
-                document.body.classList.add('theme-default'); // Use default for random
-            }
-
-            // Pass the filter state to the fetch function
-            fetchRecipeByMood(mood, vegFilterCheckbox.checked);
+            updateTheme(mood);
+            fetchRecipeByMood(mood, vegFilterCheckbox.checked, maxFatInput.value);
         });
     });
 
-    async function fetchRecipeByMood(mood, isVegOnly) {
+    function updateTheme(mood) {
+        const themeClass = `theme-${mood}`;
+        document.body.classList.remove(...themeClasses);
+        if (themeClass !== 'theme-random' && themeClasses.includes(themeClass)) {
+            document.body.classList.add(themeClass);
+        } else {
+            document.body.classList.add('theme-default');
+        }
+    }
+
+    async function fetchRecipeByMood(mood, isVegOnly, maxFat) {
         showLoading(true);
         hideRecipe();
         let meal = null;
-        let categoryToFetch = null;
 
         try {
+            // --- Build Spoonacular Query Params ---            
+            const params = new URLSearchParams({
+                apiKey: SPOONACULAR_API_KEY,
+                number: 20, // Fetch a few options to pick from
+                addRecipeNutrition: true, // Request nutritional info
+                sort: 'random', // Ask API to randomize results
+                instructionsRequired: true, // Ensure we get recipes with instructions
+            });
+
+            const moodParams = moodToSearchParams[mood] || moodToSearchParams.random;
+
+            // Add mood-based parameters
+            if (moodParams.query) params.append('query', moodParams.query);
+            if (moodParams.type) params.append('type', moodParams.type);
+            if (moodParams.cuisine) params.append('cuisine', moodParams.cuisine);
+            if (moodParams.maxReadyTime) params.append('maxReadyTime', moodParams.maxReadyTime);
+            // Add calorie filters from mood mapping
+            if (moodParams.minCalories) params.append('minCalories', moodParams.minCalories);
+            if (moodParams.maxCalories) params.append('maxCalories', moodParams.maxCalories);
+
+            // Add filters
             if (isVegOnly) {
-                // --- Vegetarian Filter ON --- 
-                if (mood === 'random') {
-                    // If random mood + veg filter, just get any vegetarian dish
-                    categoryToFetch = VEG_CATEGORY;
-                } else {
-                    // Get mood-specific categories
-                    const moodCategories = moodToCategoryMap[mood] || [];
-                    // Filter them for specifically 'Vegetarian' or 'Vegan'
-                    const vegMoodCategories = moodCategories.filter(cat => cat === VEG_CATEGORY || cat === 'Vegan');
-
-                    if (vegMoodCategories.length > 0) {
-                        // If mood list includes Veg/Vegan, pick randomly from those
-                        categoryToFetch = vegMoodCategories[Math.floor(Math.random() * vegMoodCategories.length)];
-                    } else {
-                        // If mood list has NO Veg/Vegan, fall back to general Vegetarian category
-                        console.warn(`Mood '${mood}' categories don't include Vegetarian/Vegan. Fetching general vegetarian dish.`);
-                        categoryToFetch = VEG_CATEGORY;
-                    }
-                }
-                
-                // Fetch meals from the determined vegetarian category
-                const response = await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`);
-                const data = await response.json();
-                if (data.meals && data.meals.length > 0) {
-                    const randomMealInfo = data.meals[Math.floor(Math.random() * data.meals.length)];
-                    const detailResponse = await fetch(`${API_LOOKUP_ID}${randomMealInfo.idMeal}`);
-                    const detailData = await detailResponse.json();
-                    meal = detailData.meals[0];
-                } else {
-                     showError('Not Found', `Could not find any recipes in the '${categoryToFetch}' category via the API.`);
-                }
-
-            } else {
-                 // --- Vegetarian Filter OFF --- 
-                if (mood === 'random' || !moodToCategoryMap[mood]) {
-                    // Fetch a completely random meal (non-vegetarian path)
-                    const response = await fetch(API_RANDOM);
-                    const data = await response.json();
-                    meal = data.meals[0];
-                } else {
-                    // Mood-based category selection (non-vegetarian path)
-                    let categories = moodToCategoryMap[mood];
-                    categoryToFetch = categories[Math.floor(Math.random() * categories.length)];
-
-                    // Fetch meals by the selected mood category
-                    const response = await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`);
-                    const data = await response.json();
-
-                    if (data.meals && data.meals.length > 0) {
-                        const randomMealInfo = data.meals[Math.floor(Math.random() * data.meals.length)];
-                        const detailResponse = await fetch(`${API_LOOKUP_ID}${randomMealInfo.idMeal}`);
-                        const detailData = await detailResponse.json();
-                        meal = detailData.meals[0];
-                    } else {
-                        // Fallback to general random if category yields no results
-                        console.warn(`No meals found for category: ${categoryToFetch}, fetching random meal.`);
-                        const randomResponse = await fetch(API_RANDOM);
-                        const randomData = await randomResponse.json();
-                        meal = randomData.meals[0];
-                    }
-                }
+                params.append('diet', 'vegetarian');
+            }
+            // Ensure maxFat is a positive number before adding
+            const maxFatValue = parseInt(maxFat, 10);
+            if (!isNaN(maxFatValue) && maxFatValue > 0) {
+                params.append('maxFat', maxFatValue);
             }
 
-            // Display the final meal (if found)
-            if (meal) {
+            // --- Make API Call --- 
+            const fullApiUrl = `${API_SEARCH_RECIPES}?${params.toString()}`;
+            console.log("Attempting to fetch:", fullApiUrl);
+            const response = await fetch(fullApiUrl);
+            
+            if (!response.ok) {
+                // Handle API errors (like quota exceeded, invalid key)
+                const errorData = await response.json();
+                throw new Error(`API Error (${response.status}): ${errorData.message || 'Failed to fetch recipes'}`);
+            }
+
+            const data = await response.json();
+
+            // --- Process Results --- 
+            if (data.results && data.results.length > 0) {
+                // Pick one random recipe from the filtered results
+                // Although we asked API to sort random, let's randomize again client-side for safety
+                meal = data.results[Math.floor(Math.random() * data.results.length)];
+                console.log("Selected Meal:", meal); // Log for debugging
                 displayRecipe(meal);
-            } else { 
-                // Error was already shown if category fetch failed, 
-                // so only show generic error if meal is null for other reasons (e.g., random API failed)
-                if (!categoryToFetch || !(await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`)).ok) {
-                     showError('Oops!', 'Could not find a suitable recipe this time. Please try another mood or the surprise button!');
-                }
+            } else {
+                // Handle case where no recipes match the criteria
+                showError('No Recipes Found', 'Could not find any recipes matching your mood and filter criteria. Try adjusting the filters!');
             }
+
         } catch (error) {
             console.error('Error fetching recipe:', error);
-            showError('Network Error', 'Failed to load recipe. Please check your internet connection and try again.');
+            // Display specific API error or generic network error
+            showError('Error', error.message.startsWith('API Error') ? error.message : 'Failed to load recipe. Check your internet connection or API key/quota.');
         } finally {
             showLoading(false);
         }
     }
 
     function displayRecipe(meal) {
-        dishName.textContent = meal.strMeal;
+        // --- Display Basic Info --- 
+        dishName.textContent = meal.title || 'N/A';
 
-        if (meal.strMealThumb) {
-            dishImage.src = meal.strMealThumb;
-            dishImage.alt = meal.strMeal; // Add alt text for accessibility
-            dishImage.style.display = 'block'; // Still control image visibility directly
+        if (meal.image) {
+            dishImage.src = meal.image;
+            dishImage.alt = meal.title;
+            dishImage.style.display = 'block';
         } else {
-            dishImage.src = ''; // Clear src
-            dishImage.alt = ''; // Clear alt
-            dishImage.style.display = 'none'; // Hide if no image
+            dishImage.src = '';
+            dishImage.alt = '';
+            dishImage.style.display = 'none';
         }
 
-        dishIngredients.innerHTML = ''; // Clear previous ingredients
-        for (let i = 1; i <= 20; i++) {
-            const ingredient = meal[`strIngredient${i}`];
-            const measure = meal[`strMeasure${i}`];
-            // Ensure ingredient exists and is not just whitespace
-            if (ingredient && ingredient.trim()) {
-                const li = document.createElement('li');
-                // Trim measure as well, handle cases where it might be null or just spaces
-                const measureText = (measure && measure.trim()) ? `${measure.trim()} ` : '';
-                li.textContent = `${measureText}${ingredient.trim()}`;
-                dishIngredients.appendChild(li);
-            }
+        // --- Display Nutrition (if available) ---
+        let calories = 'N/A';
+        let fat = 'N/A';
+        if (meal.nutrition && meal.nutrition.nutrients) {
+            const calorieInfo = meal.nutrition.nutrients.find(n => n.name === 'Calories');
+            const fatInfo = meal.nutrition.nutrients.find(n => n.name === 'Fat');
+            if (calorieInfo) calories = `${Math.round(calorieInfo.amount)} ${calorieInfo.unit}`;
+            if (fatInfo) fat = `${Math.round(fatInfo.amount)} ${fatInfo.unit}`;
+        }
+        dishCalories.textContent = calories;
+        dishFat.textContent = fat;
+        
+        // --- Display Summary/Link (Complex Search doesn't return full ingredients/instructions) ---
+        // We need to link to the source for full details
+        dishInstructions.textContent = meal.summary ? stripHtml(meal.summary) : 'No summary available. Click link for full recipe.';
+        
+        if(meal.sourceUrl) {
+            dishSourceLink.href = meal.sourceUrl;
+            dishSourceLink.textContent = `View Full Recipe at ${meal.sourceName || 'Source'}`;
+            dishSourceLink.style.display = 'inline-block';
+        } else {
+            dishSourceLink.href = '#';
+            dishSourceLink.textContent = '';
+            dishSourceLink.style.display = 'none';
         }
 
-        dishInstructions.textContent = meal.strInstructions || 'No instructions provided.'; // Handle potentially missing instructions
-
-        // Use classList to control visibility for fade-in effect
         recipeDisplay.classList.add('visible');
     }
 
     function showLoading(isLoading) {
-        // Keep direct style manipulation for loading indicator as it doesn't need fade
         loadingDiv.style.display = isLoading ? 'block' : 'none';
     }
 
     function hideRecipe() {
-        // Use classList to control visibility for fade-out (implicitly via transition)
         recipeDisplay.classList.remove('visible');
-
-        // Clear previous recipe details when hiding
-        // Optional: Delay clearing if you want it to happen after fade-out
-        // setTimeout(() => {
-            dishName.textContent = '';
-            dishImage.src = '';
-            dishImage.alt = '';
-            dishImage.style.display = 'none';
-            dishIngredients.innerHTML = '';
-            dishInstructions.textContent = '';
-        // }, 500); // Match transition duration
+        // Clear details
+        dishName.textContent = '';
+        dishImage.src = '';
+        dishImage.alt = '';
+        dishImage.style.display = 'none';
+        dishInstructions.textContent = '';
+        dishCalories.textContent = 'N/A'; // Reset nutrition
+        dishFat.textContent = 'N/A'; // Reset nutrition
+        dishSourceLink.href = '#'; // Reset link
+        dishSourceLink.textContent = '';
+        dishSourceLink.style.display = 'none';
     }
 
     function showError(errorTitle, errorMessage) {
+        hideRecipe(); // Clear previous recipe before showing error
         dishName.textContent = errorTitle;
-        dishIngredients.innerHTML = ''; // Clear ingredients list on error
-        dishInstructions.textContent = errorMessage;
-        dishImage.src = ''; // Clear image src
-        dishImage.alt = ''; // Clear alt text
-        dishImage.style.display = 'none'; // Hide image
+        dishInstructions.textContent = errorMessage; // Display error message in instructions area
+        recipeDisplay.classList.add('visible'); // Show the section to display the error
+    }
 
-        // Use classList to show the section (which now displays the error)
-        recipeDisplay.classList.add('visible');
+    // Helper function to remove HTML tags (basic version)
+    function stripHtml(html){
+       let tmp = document.createElement("DIV");
+       tmp.innerHTML = html;
+       return tmp.textContent || tmp.innerText || "";
     }
 }); 

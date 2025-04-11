@@ -12,20 +12,28 @@
 <body>
     <header>
         <h1>MoodFood</h1>
-        <p>Don't know what to cook? Tell us your mood!</p>
+        <p>Don't know what to cook? Tell us your mood & preferences!</p>
     </header>
 
     <main>
         <section id="mood-selector">
             <h2>How are you feeling today?</h2>
-            <div class="filter-container">
-                <input type="checkbox" id="veg-filter" name="veg-filter">
-                <label for="veg-filter">Vegetarian Only 🥕</label>
+            
+            <div class="filters-container">
+                <div class="filter-item">
+                    <input type="checkbox" id="veg-filter" name="veg-filter">
+                    <label for="veg-filter">Vegetarian Only 🥕</label>
+                </div>
+                 <div class="filter-item">
+                    <label for="max-fat-filter">Max Fat (g): </label>
+                    <input type="number" id="max-fat-filter" name="max-fat-filter" min="0" placeholder="e.g., 25">
+                </div>
             </div>
+
             <div class="mood-buttons-container">
                 <button class="mood-btn" data-mood="happy">Happy 😄</button>
                 <button class="mood-btn" data-mood="sad">Sad 😢</button>
-                <button class="mood-btn" data-mood="angry">Angry 😠</button>
+                <button class="mood-btn" data-mood="angry">Angry 😠</button> 
                 <button class="mood-btn" data-mood="adventurous">Adventurous 🌍</button>
                 <button class="mood-btn" data-mood="stressed">Stressed 😩</button>
                 <button class="mood-btn" data-mood="chill">Chill 😎</button>
@@ -37,16 +45,23 @@
             <h2>Your Suggested Dish:</h2>
             <h3 id="dish-name"></h3>
             <img id="dish-image" src="" alt="">
-            <h4>Ingredients:</h4>
-            <ul id="dish-ingredients"></ul>
-            <h4>Instructions:</h4>
+            
+            <div class="nutrition-info">
+                 <span><strong>Calories:</strong> <span id="dish-calories">N/A</span></span>
+                 <span><strong>Fat:</strong> <span id="dish-fat">N/A</span></span>
+            </div>
+
+            <h4>Summary:</h4>
             <p id="dish-instructions"></p>
+            
+            <a id="dish-source-link" href="#" target="_blank" rel="noopener" style="display: none;">View Full Recipe</a>
         </section>
+
          <div id="loading" aria-live="polite">Loading recipe...</div>
     </main>
 
     <footer>
-        <p>Powered by <a href="https://www.themealdb.com/" target="_blank" rel="noopener">TheMealDB API</a></p>
+        <p>Powered by <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">Spoonacular API</a></p>
     </footer>
 
     <script src="script.js"></script>
