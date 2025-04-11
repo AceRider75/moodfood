@@ -17,11 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const moodToCategoryMap = {
         happy: ['Dessert', 'Seafood', 'Pasta'], // Bright, celebratory foods
-        sad: ['Beef', 'Chicken', 'Pasta', 'Vegetarian', 'Dessert'], // Comforting, warm, sweet
-        angry: ['Side', 'Chicken', 'Beef', 'Pork', 'Miscellaneous'], // Spicy, hearty, maybe something to crunch?
+        sad: ['Chicken', 'Pasta', 'Vegetarian', 'Dessert'], // Comforting, warm, sweet
+        angry: ['Side', 'Chicken', 'Miscellaneous'], // Spicy, hearty, maybe something to crunch?
         adventurous: ['Side', 'Miscellaneous', 'Lamb', 'Goat', 'Seafood'], // Unique or less common dishes
         stressed: ['Starter', 'Vegan', 'Breakfast', 'Vegetarian'], // Simple, quick, or healthy options
-        chill: ['Pasta', 'Chicken', 'Vegetarian', 'Pork', 'Breakfast'], // Easy-going, satisfying meals
+        chill: ['Pasta', 'Chicken', 'Vegetarian', 'Breakfast'], // Easy-going, satisfying meals
         random: null // For completely random selection
     };
 
