@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
         happy:       { query: 'dessert' },        // Single keyword
         sad:         { query: 'comfort' },        // Single keyword
         angry:       { query: 'spicy' },          // Single keyword
-        adventurous: { query: 'exotic' },         // Single keyword
+        adventurous: { query: 'sea' },  // Changed from 'exotic'
         stressed:    { query: 'quick easy healthy', maxCalories: 800, maxReadyTime: 45 }, // Keep this one as it worked
-        chill:       { query: 'pizza' },          // Single keyword
+        chill:       { query: 'easy' },          // Single keyword
         random:      { query: '' } 
     };
 
