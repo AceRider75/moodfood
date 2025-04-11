@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         angry:       { query: 'spicy' },          // Single keyword
         adventurous: { query: 'sea' },  // Changed from 'exotic'
         stressed:    { query: 'quick easy healthy', maxCalories: 800, maxReadyTime: 45 }, // Keep this one as it worked
-        chill:       { query: 'cool' },          // Single keyword
+        chill:       { query: 'tasty' },          // Single keyword
         random:      { query: '' } 
     };
 
