@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodFood - Recipes by Mood</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>MoodFood</h1>
+        <p>Don't know what to cook? Tell us your mood!</p>
+    </header>
+
+    <main>
+        <section id="mood-selector">
+            <h2>How are you feeling today?</h2>
+            <div class="filter-container">
+                <input type="checkbox" id="veg-filter" name="veg-filter">
+                <label for="veg-filter">Vegetarian Only 🥕</label>
+            </div>
+            <div class="mood-buttons-container">
+                <button class="mood-btn" data-mood="happy">Happy 😄</button>
+                <button class="mood-btn" data-mood="sad">Sad 😢</button>
+                <button class="mood-btn" data-mood="angry">Angry 😠</button>
+                <button class="mood-btn" data-mood="adventurous">Adventurous 🌍</button>
+                <button class="mood-btn" data-mood="stressed">Stressed 😩</button>
+                <button class="mood-btn" data-mood="chill">Chill 😎</button>
+                <button class="mood-btn" data-mood="random">Surprise Me! 🎲</button>
+            </div>
+        </section>
+
+        <section id="recipe-display" aria-live="polite">
+            <h2>Your Suggested Dish:</h2>
+            <h3 id="dish-name"></h3>
+            <img id="dish-image" src="" alt="">
+            <h4>Ingredients:</h4>
+            <ul id="dish-ingredients"></ul>
+            <h4>Instructions:</h4>
+            <p id="dish-instructions"></p>
+        </section>
+         <div id="loading" aria-live="polite">Loading recipe...</div>
+    </main>
+
+    <footer>
+        <p>Powered by <a href="https://www.themealdb.com/" target="_blank" rel="noopener">TheMealDB API</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 

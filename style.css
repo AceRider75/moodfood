@@ -1,0 +1,263 @@
+/* Theme Definitions */
+:root, .theme-default {
+    --primary-color: #ff7f50; /* Coral */
+    --secondary-color: #4682b4; /* Steel Blue */
+    --background-color: #f8f8f8;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --button-text-color: #ffffff;
+    --header-text-color: #ffffff;
+}
+
+.theme-happy {
+    --primary-color: #ffdb58; /* Mustard Yellow */
+    --secondary-color: #ff6347; /* Tomato */
+    --background-color: #fffacd; /* Lemon Chiffon */
+    --button-text-color: #444;
+}
+
+.theme-sad {
+    --primary-color: #4682b4; /* Steel Blue */
+    --secondary-color: #708090; /* Slate Gray */
+    --background-color: #f0f8ff; /* Alice Blue */
+    --button-text-color: #ffffff;
+}
+
+.theme-angry {
+    --primary-color: #dc143c; /* Crimson */
+    --secondary-color: #a52a2a; /* Brown */
+    --background-color: #fff0f5; /* Lavender Blush */
+    --button-text-color: #ffffff;
+}
+
+.theme-adventurous {
+    --primary-color: #20b2aa; /* Light Sea Green */
+    --secondary-color: #ff8c00; /* Dark Orange */
+    --background-color: #f0fff0; /* Honeydew */
+}
+
+.theme-stressed {
+    --primary-color: #778899; /* Light Slate Gray */
+    --secondary-color: #b0c4de; /* Light Steel Blue */
+    --background-color: #e6e6fa; /* Lavender */
+}
+
+.theme-chill {
+    --primary-color: #6495ed; /* Cornflower Blue */
+    --secondary-color: #98fb98; /* Pale Green */
+    --background-color: #f0f8ff; /* Alice Blue */
+    --button-text-color: #333;
+}
+
+/* Add transitions for smooth theme changes */
+body, header, main, #mood-selector button, footer a {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: var(--header-text-color);
+    padding: 1.5em 0;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+header h1 {
+    margin: 0;
+    font-weight: 600;
+}
+
+header p {
+    margin: 0.5em 0 0;
+    font-weight: 300;
+}
+
+main {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    border-radius: 12px;
+}
+
+#mood-selector {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#mood-selector h2 {
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    transition: color 0.4s ease;
+}
+
+#mood-selector button {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    border: none;
+    padding: 12px 24px;
+    margin: 8px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 400;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, color 0.4s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+#mood-selector button:hover {
+    background-color: var(--secondary-color);
+    color: var(--card-bg);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+}
+
+#mood-selector button:active {
+    transform: translateY(0px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    filter: brightness(85%);
+}
+
+#recipe-display {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, border-color 0.4s ease;
+}
+
+#recipe-display.visible {
+    display: block;
+    opacity: 1;
+}
+
+#recipe-display h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    transition: color 0.4s ease;
+}
+
+#recipe-display h3#dish-name {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-weight: 600;
+    transition: color 0.4s ease;
+}
+
+#dish-image {
+    display: block;
+    margin: 25px auto;
+    border-radius: 10px;
+    max-width: 90%;
+    height: auto;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transition: box-shadow 0.4s ease;
+}
+
+#recipe-display h4 {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    transition: color 0.4s ease, border-color 0.4s ease;
+}
+
+#dish-ingredients {
+    list-style: none;
+    padding-left: 0;
+    margin-left: 0;
+}
+
+#dish-ingredients li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+#dish-ingredients li::before {
+    content: '🍊';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 0.8em;
+}
+
+#dish-instructions {
+    line-height: 1.7;
+    text-align: justify;
+    white-space: pre-wrap;
+}
+
+#loading {
+    font-size: 1.2em;
+    color: var(--secondary-color);
+    margin-top: 30px;
+    text-align: center;
+    display: none;
+    transition: color 0.4s ease;
+}
+
+footer {
+    margin-top: 40px;
+    padding: 15px 0;
+    font-size: 0.9em;
+    color: #777;
+    text-align: center;
+    border-top: 1px solid #eee;
+    background-color: var(--card-bg);
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 400;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Add styles for the filter */
+.filter-container {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Spacing between checkbox and label */
+}
+
+.filter-container label {
+    cursor: pointer;
+    color: var(--secondary-color);
+    font-weight: 400;
+}
+
+.filter-container input[type="checkbox"] {
+    cursor: pointer;
+    /* Optional: Custom checkbox styling can go here */
+}
+
+/* Container for buttons if needed */
+.mood-buttons-container {
+    /* No specific styles needed now, but good for structure */
+} 
