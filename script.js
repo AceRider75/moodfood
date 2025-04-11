@@ -50,73 +50,87 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(true);
         hideRecipe();
         let meal = null;
+        let categoryToFetch = null;
 
         try {
-            // --- Vegetarian Filter Logic ---            
             if (isVegOnly) {
-                // Fetch all vegetarian meals first
-                const response = await fetch(`${API_FILTER_CATEGORY}${VEG_CATEGORY}`);
-                const data = await response.json();
-                
-                if (data.meals && data.meals.length > 0) {
-                    // Select a random vegetarian meal from the list
-                    const randomMealInfo = data.meals[Math.floor(Math.random() * data.meals.length)];
-                    // Fetch its full details
-                    const detailResponse = await fetch(`${API_LOOKUP_ID}${randomMealInfo.idMeal}`);
-                    const detailData = await detailResponse.json();
-                    meal = detailData.meals[0];
+                // --- Vegetarian Filter ON --- 
+                if (mood === 'random') {
+                    // If random mood + veg filter, just get any vegetarian dish
+                    categoryToFetch = VEG_CATEGORY;
                 } else {
-                    // Handle case where no vegetarian meals are found (API issue?)
-                     showError('Not Found', `Could not find any vegetarian recipes via the API.`);
-                     // No need to return early, finally block handles loading
+                    // Get mood-specific categories
+                    const moodCategories = moodToCategoryMap[mood] || [];
+                    // Filter them for specifically 'Vegetarian' or 'Vegan'
+                    const vegMoodCategories = moodCategories.filter(cat => cat === VEG_CATEGORY || cat === 'Vegan');
+
+                    if (vegMoodCategories.length > 0) {
+                        // If mood list includes Veg/Vegan, pick randomly from those
+                        categoryToFetch = vegMoodCategories[Math.floor(Math.random() * vegMoodCategories.length)];
+                    } else {
+                        // If mood list has NO Veg/Vegan, fall back to general Vegetarian category
+                        console.warn(`Mood '${mood}' categories don't include Vegetarian/Vegan. Fetching general vegetarian dish.`);
+                        categoryToFetch = VEG_CATEGORY;
+                    }
                 }
-            // --- END: Vegetarian Filter Logic ---
                 
-            // --- Original Logic (No Veg Filter) ---
-            } else if (mood === 'random' || !moodToCategoryMap[mood]) {
-                // Fetch a completely random meal (non-vegetarian path)
-                const response = await fetch(API_RANDOM);
+                // Fetch meals from the determined vegetarian category
+                const response = await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`);
                 const data = await response.json();
-                meal = data.meals[0];
-            } else {
-                // Mood-based category selection (non-vegetarian path)
-                let categories = moodToCategoryMap[mood];
-                // Ensure we don't accidentally pick 'Vegetarian' if it's in the mood list but the filter is off
-                // Although, allowing it might be fine too. Let's leave it for now.
-                const category = categories[Math.floor(Math.random() * categories.length)];
-
-                // Fetch meals by the selected mood category
-                const response = await fetch(`${API_FILTER_CATEGORY}${category}`);
-                const data = await response.json();
-
                 if (data.meals && data.meals.length > 0) {
-                    // Select a random meal from the category
                     const randomMealInfo = data.meals[Math.floor(Math.random() * data.meals.length)];
-                    // Fetch its full details
                     const detailResponse = await fetch(`${API_LOOKUP_ID}${randomMealInfo.idMeal}`);
                     const detailData = await detailResponse.json();
                     meal = detailData.meals[0];
                 } else {
-                    // Fallback to general random if category yields no results
-                    console.warn(`No meals found for category: ${category}, fetching random meal.`);
-                    const randomResponse = await fetch(API_RANDOM);
-                    const randomData = await randomResponse.json();
-                    meal = randomData.meals[0];
+                     showError('Not Found', `Could not find any recipes in the '${categoryToFetch}' category via the API.`);
+                }
+
+            } else {
+                 // --- Vegetarian Filter OFF --- 
+                if (mood === 'random' || !moodToCategoryMap[mood]) {
+                    // Fetch a completely random meal (non-vegetarian path)
+                    const response = await fetch(API_RANDOM);
+                    const data = await response.json();
+                    meal = data.meals[0];
+                } else {
+                    // Mood-based category selection (non-vegetarian path)
+                    let categories = moodToCategoryMap[mood];
+                    categoryToFetch = categories[Math.floor(Math.random() * categories.length)];
+
+                    // Fetch meals by the selected mood category
+                    const response = await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`);
+                    const data = await response.json();
+
+                    if (data.meals && data.meals.length > 0) {
+                        const randomMealInfo = data.meals[Math.floor(Math.random() * data.meals.length)];
+                        const detailResponse = await fetch(`${API_LOOKUP_ID}${randomMealInfo.idMeal}`);
+                        const detailData = await detailResponse.json();
+                        meal = detailData.meals[0];
+                    } else {
+                        // Fallback to general random if category yields no results
+                        console.warn(`No meals found for category: ${categoryToFetch}, fetching random meal.`);
+                        const randomResponse = await fetch(API_RANDOM);
+                        const randomData = await randomResponse.json();
+                        meal = randomData.meals[0];
+                    }
                 }
             }
-            // --- END: Original Logic ---
 
             // Display the final meal (if found)
             if (meal) {
                 displayRecipe(meal);
-            } else if (!isVegOnly) { // Only show generic error if not in veg-only error state
-                showError('Oops!', 'Could not find a suitable recipe this time. Please try another mood or the surprise button!');
+            } else { 
+                // Error was already shown if category fetch failed, 
+                // so only show generic error if meal is null for other reasons (e.g., random API failed)
+                if (!categoryToFetch || !(await fetch(`${API_FILTER_CATEGORY}${categoryToFetch}`)).ok) {
+                     showError('Oops!', 'Could not find a suitable recipe this time. Please try another mood or the surprise button!');
+                }
             }
         } catch (error) {
             console.error('Error fetching recipe:', error);
             showError('Network Error', 'Failed to load recipe. Please check your internet connection and try again.');
         } finally {
-             // Ensure loading is hidden regardless of outcome
             showLoading(false);
         }
     }
